@@ -1,0 +1,79 @@
+#+TITLE:       user-interface.progress
+#+AUTHOR:      Jan Moringen
+#+EMAIL:       jmoringe@techfak.uni-bielefeld.de
+#+DESCRIPTION: Thread-safe, flexible progress tracking and reporting.
+#+KEYWORDS:    user interface, progress, progress bar, threads, terminal, color, common lisp
+#+LANGUAGE:    en
+
+* Introduction
+  Sometimes, the execution progress of long-running operations has to
+  be tracked and reported. For any particular instance of the problem,
+  a simple hack is a sufficient solution - and there is indeed lots of
+  code printing dots or even drawing progress bars (sometimes even
+  with ANSI SGR escapes) from within the respective operations. Of
+  course, such hacks are a poor solution when separation of concerns,
+  reusability or flexibility are taken into account.
+
+  The =user-interface.progress= system, in combination with the
+  [[http://github.com/scymtym/more-conditions][=more-conditions=]] system, tries to improve the situation.
+
+  As a first step, progress tracking can be separated from reporting
+  using the Common Lisp condition system: when there is progress to be
+  tracked, any code can =cl:signal= a
+  =more-conditions:progress-condition=. The signaling code does not
+  have to care or even know whether the condition will be handled
+  somewhere up the callstack, nor does it depend on anything more than
+  the =more-conditions= systems.
+
+  On the other hand, a piece of code wanting to report progress can do
+  so without having to know if and where progress conditions will be
+  signaled.
+* Tutorial
+** Signaling Progress Conditions
+   Note that the following snippets will not have any observable
+   effect unless the signaled conditions are handled (This is usually
+   done by [[*Reporting Progress][setting up progress reporting]]).
+
+   The simplest way to report progress is calling the
+   =more-conditions:progress= function:
+   #+BEGIN_SRC lisp
+   (more-conditions:progress :my-operation 0.5
+                             "Processing element ~A" :some-element)
+   #+END_SRC
+   There are also convenience macros for common situations:
+
+   #+BEGIN_SRC lisp
+   (more-conditions:with-trivial-progress
+       (:my-operation "Frobbing ~A" :some-object)
+     CODE)
+   #+END_SRC
+   This will signal a progress of 0 % before the execution of /CODE/
+   and a progress of 100 % after the execution.
+
+   #+BEGIN_SRC lisp
+   (more-conditions:with-sequence-progress (:my-operation my-sequence)
+     (dolist (my-element my-sequence)
+       (more-conditions:progress "Processing element ~A" my-element)
+       CODE))
+   #+END_SRC
+   This will signal a progress condition for each element of the
+   sequence, automatically computing the corresponding progress.
+** Reporting Progress
+   The macro =user-interface.progress:with-progress-report= setup up
+   collecting and reporting of progress information. It takes a
+   stream (or some other target) to which the report should be
+   written and style object which selects the kind of report:
+   #+BEGIN_SRC lisp
+   (user-interface.progress:with-progress-report
+       (*standard-output*
+        :style (make-instance 'user-interface.progress::vertical))
+     CODE)
+   #+END_SRC
+   Progress conditions signaled from /CODE/ will result in a report
+   in style "vertical" being written to =*standard-output*=.
+** TODO Reporting Progress for Multiple Threads
+
+* Settings                                                         :noexport:
+
+#+OPTIONS: H:2 num:nil toc:t \n:nil @:t ::t |:t ^:t -:t f:t *:t <:t
+#+OPTIONS: TeX:t LaTeX:t skip:nil d:nil todo:t pri:nil tags:not-in-toc
