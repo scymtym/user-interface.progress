@@ -59,7 +59,9 @@
                               (:file       "report-mixins")
                               (:file       "report")
                               (:file       "variables")
-                              (:file       "macros"))))
+                              (:file       "macros")))
+
+                (:static-file "README.org"))
 
   :in-order-to ((test-op (test-op :user-interface.progress-test))))
 
