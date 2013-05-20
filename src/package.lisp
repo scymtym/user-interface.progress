@@ -45,7 +45,9 @@
 
   ;; Macros
   (:export
-   #:with-progress-report)
+   #:with-progress-report
+
+   #:update) ; defined in lexical scope of with-progress-report
 
   (:documentation
    "TODO"))
