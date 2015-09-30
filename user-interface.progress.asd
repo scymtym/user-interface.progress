@@ -72,7 +72,7 @@
   :license     "LLGPLv3" ; see COPYING file for details.
   :description "Unit tests for the user-interface.progress system."
   :depends-on  ((:version :user-interface.progress #.(version/string))
-                :eos)
+                :fiveam)
   :components  ((:module     "test"
                  :serial     t
                  :components ((:file       "package")
